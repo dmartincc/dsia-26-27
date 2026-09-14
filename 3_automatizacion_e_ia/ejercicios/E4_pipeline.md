@@ -21,7 +21,7 @@ Prueba manual:
 
 ```bash
 python ejemplos/pipeline_ventas.py --input Datos/ventas.csv --output-dir /tmp/out --max-error-rate 0.05
-# debe fallar con el dataset del curso (2/10 = 0.2)
+# debe fallar con el dataset del curso (10/150 ≈ 0.067)
 ```
 
 ## Parte 3 — Observabilidad (8 min)

@@ -34,7 +34,7 @@ Reglas mínimas:
 
 Devuelve `(validos, errores)`.
 
-**Checkpoint:** con el CSV del curso debes obtener **8 válidas** y **2 inválidas**.
+**Checkpoint:** con el CSV del curso debes obtener **140 válidas** y **10 inválidas**.
 
 ## Parte 3 — Agregaciones (8 min)
 
