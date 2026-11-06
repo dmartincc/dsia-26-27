@@ -1,12 +1,12 @@
-# Sesión 2 nov 2026 — E2E II: robustez, errores y logging
+# Sesión 16 nov 2026 — E2E II: robustez, errores y logging
  
 | Recurso | Fichero |
 | --- | --- |
 | Demo | [`plantilla_proyecto/`](plantilla_proyecto/) (`app.py`, cliente IA, `tests/`) |
-| Ejercicio de clase | [`ejercicios/E8_robustez.md`](ejercicios/E8b_robustez.md) |
+| Ejercicio de clase | [`ejercicios/E8b_robustez.md`](ejercicios/E8b_robustez.md) |
 | Datos | [`../3_automatizacion_e_ia/Datos/ventas.csv`](../3_automatizacion_e_ia/Datos/ventas.csv) → `data/clean.csv` |
-| Base previa | [`E2E_I_arquitectura_flujo_completo.md`](E2E_I_arquitectura_flujo_completo.md) (contratos, capas, mock por defecto) |
-| Enunciado | [`proyectos/proyecto_iii/`](proyectos/proyecto_iii/) |
+| Base previa | [`01_arquitectura_e2e.md`](01_arquitectura_e2e.md) (contratos, capas, mock por defecto) |
+| Enunciado | [`../proyectos/proyecto_iii/`](../proyectos/proyecto_iii/) |
  
 ## Historia de la sesión (léela primero)
  
@@ -22,7 +22,7 @@ Hoy no aprendes “cómo poner un `try/except`”. Aprendes a que tu flujo **fal
  
 **Regla de oro:** si ante un fallo el cliente recibe una traza, o tú no sabes qué pasó sin reproducirlo, **aún no es robusto**.
  
-En clase: exposición (~30 min, Parte A) → ejercicio [`E8`](ejercicios/E8b_robustez.md) (~50 min, A + B).
+En clase: exposición (~30 min, Parte A) → ejercicio [`E8b`](ejercicios/E8b_robustez.md) (~50 min, A + B).
  
 ---
  
@@ -49,7 +49,7 @@ Tema 2  →  pytest + CI              (confianza en el código)
 Tema 3  →  job CLI, exit codes      (señales para máquinas)
 E2E I   →  flujo completo + contratos
 E2E II  →  robustez + errores + logging (hoy)   (el flujo falla bien)
-Deploy  →  lo que hoy ves en local, mañana lo lees en un servidor sin pantalla
+Deploy  →  lo que hoy ves en local, mañana lo lees en un servidor sin pantalla (03_despliegue.md)
 ```
  
 En la sesión 5, las señales eran `exit 0/1/2` + `metrics.json` + `run.log`. En un servicio, las señales equivalentes son **código HTTP + cuerpo de error + log estructurado + `/health`**:
@@ -210,7 +210,7 @@ A3 health       →  el servicio dice cómo está, de forma accionable
         └── excepciones, timeouts, reintentos y tests (Parte B) lo implementan y lo verifican
 ```
  
-**Siguiente paso en clase:** [`ejercicios/E6_robustez.md`](ejercicios/E6_robustez.md).
+**Siguiente paso en clase:** [`ejercicios/E8b_robustez.md`](ejercicios/E8b_robustez.md).
  
 ---
  
@@ -331,6 +331,8 @@ Reglas:
 - El **log** ve la causa real (`cause=…`) y, en `500`, la traza completa (`logger.exception`).
 - Forma de error **siempre igual** → los clientes pueden depender de ella (contrato de A1 en E2E I).
 - Traducción de excepciones del proveedor a las tuyas **en el borde** (cliente IA), no en la API.
+
+> En `E8b` basta con un cuerpo plano `{"error": "...", "request_id": "..."}`. La forma anidada de arriba es la recomendada para el Trabajo Final; elige una y mantenla en todos los endpoints.
 ---
  
 ## B4 — Timeouts y reintentos
@@ -415,7 +417,8 @@ Decisión de diseño a fijar en el contrato:
 | A | `200` + `"status": "degraded"` | El servicio sigue sirviendo; solo avisa |
 | B | `503` | Un balanceador debe sacarlo de rotación |
  
-En el curso: **opción A** por defecto; documenta la tuya en el README.
+En el curso: **opción A** por defecto; documenta la tuya en el README.  
+En `E8b` se pide la **opción B** (`503`) para practicarla. Ojo al desplegar: si la plataforma usa `/health` como health check, un `503` hace que **no** reciba tráfico o que se reinicie (ver `03_despliegue.md`, A3).
  
 ---
  
@@ -477,8 +480,10 @@ def test_health_degraded_without_data(client, tmp_path, monkeypatch):
 ```text
 E2E I   →  contratos + capas + mock por defecto
 E2E II  →  errores tipados + logs con request_id + health accionable + tests de fallo
-Deploy  →  mismo servicio, otro entorno: lo único que verás de él es el log y /health
+Deploy  →  mismo servicio, en Render: lo único que verás de él es el log y /health
 ```
+
+En [`03_despliegue.md`](03_despliegue.md) el `/health` de hoy se convierte en el **health check** de la plataforma y los logs a `stdout` son lo que leerás en su pestaña *Logs*.
  
 Reutiliza: la taxonomía y el handler central en cualquier endpoint nuevo · `request_id` en todos los logs · mock con modos de fallo en CI.  
 Para la evaluación, el proyecto debería poder **demostrar un fallo controlado** (p. ej. `AI_MOCK_MODE=down` → `503` limpio + línea en el log).
@@ -528,7 +533,7 @@ Para la evaluación, el proyecto debería poder **demostrar un fallo controlado*
 - [ ] Timeout en la llamada IA; reintento solo en transitorios  
 - [ ] Provoco `400`, `503`, `504` y `500` en local  
 - [ ] Tests de robustez pasan sin red; sin traza ni secretos en respuestas/logs  
-- [ ] E6 hecho / idea clara para el Trabajo Final  
+- [ ] E8b hecho / idea clara para el Trabajo Final  
 ---
  
 ## B13 — Apéndices
@@ -593,4 +598,4 @@ pytest -q
  
 > **Robustez = taxonomía de errores + logs con contexto y sin secretos + health accionable, implementada con excepciones tipadas, timeouts acotados y tests de fallo.**
  
-**Ahora:** [`ejercicios/E6_robustez.md`](ejercicios/E8b_robustez.md).
+**Ahora:** [`ejercicios/E8b_robustez.md`](ejercicios/E8b_robustez.md).
