@@ -4,7 +4,7 @@
 | --- | --- |
 | Demo | [`../sesiones/2026-11-23_asistentes/ejemplos/modulo_deuda.py`](../sesiones/2026-11-23_asistentes/ejemplos/modulo_deuda.py) (módulo con deuda deliberada) |
 | Prompts | [`prompts/catalogo_prompts.md`](prompts/catalogo_prompts.md) · [`../sesiones/2026-11-23_asistentes/ejemplos/prompts_clase.md`](../sesiones/2026-11-23_asistentes/ejemplos/prompts_clase.md) |
-| Ejercicio de clase | [`ejercicios/E6_asistentes.md`](ejercicios/E6_asistentes.md) |
+| Ejercicio de clase | [`ejercicios/E6_asistentes.md`](ejercicios/E6_asistentes.md) · [`ejercicios/E7_refactor_tests_docs.md`](ejercicios/E7_refactor_tests_docs.md) (release candidate) |
 | Base previa | [`../4_desarrollo_end_to_end/`](../4_desarrollo_end_to_end/) (contratos, robustez, despliegue) · tests con `pytest` + CI |
 | Herramientas | Cursor · Claude Code · Gemini CLI (cualquiera vale; el protocolo es el mismo) |
 | Enunciado | [`../proyectos/proyecto_iii/`](../proyectos/proyecto_iii/) (criterio 8: política de uso de IA) |
@@ -23,7 +23,7 @@ Hoy no aprendes “qué asistente es mejor”. Aprendes a **trabajar con uno sob
 
 **Regla de oro:** si no puedes explicar línea a línea un cambio generado por la IA, o no hay un test que lo respalde, **no se commitea**.
 
-En clase: exposición (~30 min, Parte A + demo) → ejercicio [`E6`](ejercicios/E6_asistentes.md) (~30 min) → mismo protocolo sobre el Trabajo Final (resto de la sesión).
+En clase: exposición (~30 min, Parte A + demo) → ejercicio [`E6`](ejercicios/E6_asistentes.md) (~30 min) → [`E7`](ejercicios/E7_refactor_tests_docs.md): release candidate del Trabajo Final con el mismo protocolo (resto de la sesión).
 
 ---
 
@@ -404,7 +404,7 @@ Triaje de la respuesta:
 | Falso positivo (la validación ya existe en otra capa) | Ignorar y anotarlo |
 | Cambio grande de arquitectura | Anotar como mejora futura; no ahora |
 
-Regla de `E7`: elige **3 hallazgos reales** y corrígelos; el resto es ruido.
+Regla de [`E7`](ejercicios/E7_refactor_tests_docs.md) (hoy): elige **3 hallazgos reales** y corrígelos; el resto es ruido.
 
 ---
 
@@ -457,7 +457,7 @@ Un registro útil es **breve, concreto y verificable**. Una entrada por tarea re
 ```text
 E2E I–III  →  contratos + robustez + despliegue (lo que no puedes romper)
 Hoy        →  IA asistida con protocolo + AI_USAGE.md
-23 nov     →  release candidate: review de riesgos, README de demo, tag v0.9.0-rc1 (E7)
+              + release candidate (E7): review de riesgos, README de demo, tag v0.9.0-rc1
 30 nov     →  presentación: se pregunta por el uso de IA y se revisa AI_USAGE.md
 ```
 
@@ -516,6 +516,7 @@ Para la evaluación (criterio 8 del enunciado): `AI_USAGE.md` con entradas reale
 - [ ] Review de riesgos con al menos un hallazgo real corregido  
 - [ ] `AI_USAGE.md` con explicación, plan, aceptados y rechazados  
 - [ ] E6 hecho / protocolo aplicado al Trabajo Final  
+- [ ] E7: tag `v0.9.0-rc1` + README reproducible + `RELEASE.md`  
 
 ---
 

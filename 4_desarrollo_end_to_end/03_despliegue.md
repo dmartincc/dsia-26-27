@@ -487,7 +487,7 @@ Anota en el README qué versión está desplegada (`v0.3.0`) y la URL.
 E2E I   →  contratos + capas + mock por defecto
 E2E II  →  errores tipados + logs con request_id + health accionable
 E2E III →  empaquetado + variables de entorno + Render + smoke + rollback
-Siguiente → IA asistida (16 nov), release candidate (23 nov) y presentación (30 nov): la URL pública es parte de la demo
+Siguiente → IA asistida + release candidate (16 nov) y presentación (30 nov): la URL pública es parte de la demo
 ```
 
 El Proyecto III exige **despliegue accesible o empaquetado listo con instrucciones verificables** (API y dashboard). Con Render cubres la primera opción; si no puedes desplegar, entrega el ensayo de B2 + `render.yaml` + smoke en local como “listo para desplegar”.
