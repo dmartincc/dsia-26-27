@@ -1,4 +1,4 @@
-# Sesión 16 nov 2026 — E2E II: robustez, errores y logging
+# Sesión 6 nov 2026 — E2E II: robustez, errores y logging
  
 | Recurso | Fichero |
 | --- | --- |

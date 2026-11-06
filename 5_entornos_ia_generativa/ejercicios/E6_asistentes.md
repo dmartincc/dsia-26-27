@@ -1,6 +1,6 @@
 # E6 — Taller con asistentes sobre código existente (30 min)
 
-**Sesión:** 23 nov 2026  
+**Sesión:** 16 nov 2026  
 **Prompts:** `../prompts/catalogo_prompts.md`
 
 ## Reglas

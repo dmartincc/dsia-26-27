@@ -1,4 +1,4 @@
-# Sesión 16 nov 2026 — E2E III: despliegue y puesta en producción (Render)
+# Sesión 12 nov 2026 — E2E III: despliegue y puesta en producción (Render)
 
 | Recurso | Fichero |
 | --- | --- |
@@ -386,8 +386,8 @@ En el curso: dashboard para la demo; **Blueprint recomendado** para el Trabajo F
 Render recoge todo lo que tu proceso escribe en `stdout`/`stderr`. El `setup_logging()` de E2E II (`StreamHandler(sys.stdout)`) ya está listo:
 
 ```text
-2026-11-16 12:01:03 INFO    dsia.e2e analyze_ok request_id=3f2a latency_ms=4.1 provider=mock
-2026-11-16 12:01:09 WARNING dsia.e2e analyze_failed request_id=9b1c code=invalid_input status=400
+2026-11-12 12:01:03 INFO    dsia.e2e analyze_ok request_id=3f2a latency_ms=4.1 provider=mock
+2026-11-12 12:01:09 WARNING dsia.e2e analyze_failed request_id=9b1c code=invalid_input status=400
 ```
 
 | Necesito… | Dónde |
@@ -487,7 +487,7 @@ Anota en el README qué versión está desplegada (`v0.3.0`) y la URL.
 E2E I   →  contratos + capas + mock por defecto
 E2E II  →  errores tipados + logs con request_id + health accionable
 E2E III →  empaquetado + variables de entorno + Render + smoke + rollback
-Siguiente → release candidate (23 nov) y presentación (30 nov): la URL pública es parte de la demo
+Siguiente → IA asistida (16 nov), release candidate (23 nov) y presentación (30 nov): la URL pública es parte de la demo
 ```
 
 El Proyecto III exige **despliegue accesible o empaquetado listo con instrucciones verificables** (API y dashboard). Con Render cubres la primera opción; si no puedes desplegar, entrega el ensayo de B2 + `render.yaml` + smoke en local como “listo para desplegar”.
