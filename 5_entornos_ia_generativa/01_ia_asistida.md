@@ -6,7 +6,8 @@
 | Prompts | [`prompts/catalogo_prompts.md`](prompts/catalogo_prompts.md) · [`../sesiones/2026-11-23_asistentes/ejemplos/prompts_clase.md`](../sesiones/2026-11-23_asistentes/ejemplos/prompts_clase.md) |
 | Ejercicio de clase | [`ejercicios/E6_asistentes.md`](ejercicios/E6_asistentes.md) · [`ejercicios/E7_refactor_tests_docs.md`](ejercicios/E7_refactor_tests_docs.md) (release candidate) |
 | Base previa | [`../4_desarrollo_end_to_end/`](../4_desarrollo_end_to_end/) (contratos, robustez, despliegue) · tests con `pytest` + CI |
-| Herramientas | Cursor · Claude Code · Gemini CLI (cualquiera vale; el protocolo es el mismo) |
+| Herramientas | IDE (Cursor, Windsurf, Copilot) · agentes CLI (Claude Code, Gemini CLI, Codex CLI) · **open source multimodelo** (OpenCode, Aider, Goose, Cline, Continue, OpenHands) — ver B1.2 |
+| Modelo de la práctica | [Nemotron 3.5 Super VL 120B-A12B](https://build.nvidia.com/nvidia/nemotron-3.5-super-vl-120b-a12b) vía build.nvidia.com (B1.3, E6 Parte 0) |
 | Enunciado | [`../proyectos/proyecto_iii/`](../proyectos/proyecto_iii/) (criterio 8: política de uso de IA) |
 
 ## Historia de la sesión (léela primero)
@@ -14,6 +15,7 @@
 Hoy no aprendes “qué asistente es mejor”. Aprendes a **trabajar con uno sobre código que ya existe** (tu Trabajo Final) sin perder el control: que cada sugerencia pase por tu revisión, por los tests y por el registro antes de llegar a `main`:
 
 ```text
+0. Montas tu entorno: agente + modelo          →  Parte B1  (open source + Nemotron en build.nvidia.com)
 1. Tú firmas el código: la IA sugiere          →  Parte A1  (responsabilidad · riesgos · AI_USAGE.md)
 2. Le das contexto acotado y prompts en cadena  →  Parte A2  (explicar → plan → un cambio → tests → review)
 3. Aceptas solo lo que supera el protocolo      →  Parte A3  (diff entendido · APIs reales · tests verdes · sin secretos)
@@ -23,7 +25,7 @@ Hoy no aprendes “qué asistente es mejor”. Aprendes a **trabajar con uno sob
 
 **Regla de oro:** si no puedes explicar línea a línea un cambio generado por la IA, o no hay un test que lo respalde, **no se commitea**.
 
-En clase: exposición (~30 min, Parte A + demo) → ejercicio [`E6`](ejercicios/E6_asistentes.md) (~30 min) → [`E7`](ejercicios/E7_refactor_tests_docs.md): release candidate del Trabajo Final con el mismo protocolo (resto de la sesión).
+En clase: exposición (~30 min, Parte A + B1 + demo) → ejercicio [`E6`](ejercicios/E6_asistentes.md) (~50 min: Parte 0 monta el entorno open source con Nemotron, Partes 1–4 lo usan) → [`E7`](ejercicios/E7_refactor_tests_docs.md): release candidate del Trabajo Final con el mismo protocolo (resto de la sesión).
 
 ---
 
@@ -37,11 +39,12 @@ En clase: exposición (~30 min, Parte A + demo) → ejercicio [`E6`](ejercicios/
 
 ### Deseables (Parte B)
 
-4. Usar un asistente (Cursor, Claude Code o Gemini CLI) sobre **código existente**, no sobre un repo vacío.
-5. Refactorizar en **pasos pequeños** con diffs revisables (< 80 líneas).
-6. Generar tests con IA y **descartar** los que alucinen.
-7. Hacer un **review de riesgos** asistido (secretos, validación, timeouts, errores) y triar hallazgos reales.
-8. Conectar el protocolo con el **Trabajo Final (Proyecto III)** y su política de citas.
+4. Distinguir **agente** (harness) de **modelo** y montar un entorno open source (OpenCode, Aider o Cline) sobre Nemotron 3.5 Super VL en build.nvidia.com.
+5. Usar ese asistente (u otro: Cursor, Claude Code, Gemini CLI…) sobre **código existente**, no sobre un repo vacío.
+6. Refactorizar en **pasos pequeños** con diffs revisables (< 80 líneas).
+7. Generar tests con IA y **descartar** los que alucinen.
+8. Hacer un **review de riesgos** asistido (secretos, validación, timeouts, errores) y triar hallazgos reales.
+9. Conectar el protocolo con el **Trabajo Final (Proyecto III)** y su política de citas.
 
 ---
 
@@ -215,25 +218,61 @@ A3 aceptación       →  nada llega a main sin entenderlo, testearlo y registra
 
 ---
 
-## B1 — Anatomía: herramientas y piezas
+## B1 — Anatomía: herramientas, agentes y modelos
+
+### B1.1 — Agente ≠ modelo
+
+Una herramienta de programación con IA tiene dos piezas que **se pueden separar**:
+
+```text
+┌───────────────────────────── Agente / harness ─────────────────────────────┐
+│  lee ficheros · edita · ejecuta comandos · pide permisos · gestiona sesión │
+│  fichero de contexto (AGENTS.md, CLAUDE.md…) · herramientas (tools)        │
+└──────────────────────────────────┬─────────────────────────────────────────┘
+                                   │  API (casi siempre "OpenAI-compatible")
+┌──────────────────────────────────▼─────────────────────────────────────────┐
+│  Modelo: cerrado (Claude, Gemini, GPT…) · abierto en la nube (build.nvidia │
+│  .com, OpenRouter…) · abierto en local (Ollama, vLLM, LM Studio)           │
+└────────────────────────────────────────────────────────────────────────────┘
+```
+
+| Consecuencia | Por qué importa |
+| --- | --- |
+| El **protocolo** (A1–A3) no depende de ninguna de las dos piezas | Se evalúa el proceso, no la herramienta |
+| Un agente open source puede usar **cualquier** modelo con API compatible | Evitas depender de un proveedor; cambias de modelo editando una línea |
+| La calidad del agente depende de que el modelo haga bien **tool calling** | Un modelo que no llama bien a las herramientas “habla” pero no edita ni ejecuta |
+| Dónde corre el modelo decide **a dónde viajan tus datos** | Nube → nada de `.env` ni datos personales; local → más privado, más hardware |
+
+### B1.2 — Panorama de herramientas (nov 2026)
 
 | Herramienta | Tipo | Encaje en clase | Fichero de contexto del proyecto |
 | --- | --- | --- | --- |
-| **Cursor** | IDE con chat y edición multiarchivo | Refactors guiados viendo el diff en el editor | Reglas del proyecto (`.cursor/rules/`) |
-| **Claude Code** | Agente en terminal sobre el repo | Tareas de varios pasos: leer, editar, ejecutar tests | `CLAUDE.md` |
-| **Gemini CLI** | Agente en terminal | Exploración rápida, prototipos, explicar código | `GEMINI.md` |
+| **Cursor** | IDE con chat y edición multiarchivo · propietario | Refactors guiados viendo el diff en el editor | Reglas del proyecto (`.cursor/rules/`); también lee `AGENTS.md` |
+| **Windsurf** | IDE con agente (Cascade) · propietario | Alternativa a Cursor; mismo flujo de diff en el editor | `.windsurf/rules/` |
+| **GitHub Copilot** (VS Code / JetBrains) | Autocompletado + chat + modo agente · propietario | Sugerencias en línea y tareas acotadas dentro del IDE que ya usas | `.github/copilot-instructions.md` |
+| **Claude Code** | Agente en terminal sobre el repo · propietario, modelos Claude | Tareas de varios pasos: leer, editar, ejecutar tests | `CLAUDE.md` |
+| **Gemini CLI** | Agente en terminal · open source (Apache 2.0), modelos Gemini | Exploración rápida, prototipos, explicar código | `GEMINI.md` (configurable para leer `AGENTS.md`) |
+| **Codex CLI** | Agente en terminal · open source (Apache 2.0), modelos OpenAI | Tareas de varios pasos con sandbox de comandos | `AGENTS.md` |
+| **OpenCode** | Agente en terminal (TUI) · open source (MIT), **cualquier modelo** | **E6, Parte 0**: agente principal con Nemotron | `AGENTS.md` |
+| **Aider** | Agente en terminal centrado en git · open source (Apache 2.0), **cualquier modelo** | Un commit por cambio: encaja con diffs pequeños (A3) | `CONVENTIONS.md` vía `--read` (o `.aider.conf.yml`) |
+| **Goose** | Agente en terminal / escritorio con extensiones MCP · open source (Apache 2.0), **cualquier modelo** | Automatizar flujos que combinan repo y herramientas externas | `.goosehints` (también `AGENTS.md`) |
+| **Cline** · Roo Code · Kilo Code | Extensión de VS Code con modo plan/actuar · open source (Apache 2.0), **cualquier modelo** | Como Cursor, pero eliges el modelo y apruebas cada acción | `.clinerules/` · `.roo/rules/` · `AGENTS.md` |
+| **Continue** | Extensión de VS Code / JetBrains (chat, autocompletado, agente) · open source (Apache 2.0), **cualquier modelo** | Autocompletado con modelos locales u open source | `.continue/rules/` |
+| **OpenHands** | Plataforma de agentes autónomos en sandbox Docker · open source (MIT), **cualquier modelo** | Ver un agente resolver una issue entera; fuera del alcance de hoy | `AGENTS.md` / `.openhands/microagents/` |
 
 | Pieza del proyecto | Rol |
 | --- | --- |
-| `prompts/catalogo_prompts.md` | Plantillas: explicar, refactor, tests, docs, diseño de feature |
-| Fichero de contexto (`CLAUDE.md`, `GEMINI.md`, reglas) | Cómo se ejecutan los tests, convenciones, qué no tocar |
+| `prompts/catalogo_prompts.md` | Plantillas: explicar, refactor, tests, docs, diseño de feature, review |
+| Fichero de contexto | Cómo se ejecutan los tests, convenciones, qué no tocar |
 | Rama de trabajo (`git switch -c refactor/...`) | Aislar los cambios de la IA de `main` |
 | `pytest` + CI | Freno de mano |
-| `AI_USAGE.md` | Registro de aportaciones y rechazos |
+| `AI_USAGE.md` | Registro de aportaciones y rechazos (incluye herramienta **y modelo**) |
 
-> La herramienta concreta es secundaria: las tres sirven si aplicas el mismo protocolo. Lo que se evalúa es el **proceso** (diffs pequeños, tests, registro), no el asistente.
+> La herramienta concreta es secundaria: todas sirven si aplicas el mismo protocolo. Lo que se evalúa es el **proceso** (diffs pequeños, tests, registro), no el asistente.
 
-Fichero de contexto mínimo (adapta el nombre a tu herramienta):
+> Consejo: escribe un único `AGENTS.md` y, si tu herramienta pide otro nombre, enlázalo (`ln -s AGENTS.md CLAUDE.md`) o impórtalo desde él. Una sola fuente de verdad.
+
+Fichero de contexto mínimo:
 
 ```markdown
 # Contexto del proyecto
@@ -242,6 +281,114 @@ Fichero de contexto mínimo (adapta el nombre a tu herramienta):
 - No añadir dependencias sin preguntar. No tocar el contrato de /analyze.
 - Nunca leer ni escribir `.env`.
 ```
+
+### B1.3 — Entorno open source: agente + Nemotron 3.5 Super VL (build.nvidia.com)
+
+Hoy montamos un entorno **sin licencias de pago**: agente open source + modelo de pesos abiertos servido por NVIDIA.
+
+| Dato del modelo | Valor |
+| --- | --- |
+| Página | <https://build.nvidia.com/nvidia/nemotron-3.5-super-vl-120b-a12b> |
+| Id en la API | `nvidia/nemotron-3.5-super-vl-120b-a12b` |
+| Endpoint | `https://integrate.api.nvidia.com/v1` (formato `/chat/completions`, compatible con el SDK de OpenAI) |
+| Arquitectura | Híbrido Mamba-2 + Transformer, Mixture of Experts: **120B parámetros, 12B activos** por token |
+| Entradas / salida | Texto, imágenes y vídeo → texto (“VL” = vision-language) |
+| Contexto | Hasta 1M tokens según la ficha (la tabla de especificaciones dice 262.144; cuenta con el menor) |
+| Razonamiento | Se activa o desactiva con `chat_template_kwargs: {"enable_thinking": true/false}` |
+| Muestreo recomendado | Texto: `temperature=1.0, top_p=0.95` · visión: `temperature=0.6, top_p=0.95` |
+| Tool calling | Sí (requisito para usarlo como agente) |
+| Licencia | Pesos: OpenMDW-1.1 (en Hugging Face: `nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-NVFP4` / `-BF16`) · API: *NVIDIA API Trial Terms of Service* |
+
+Por qué este modelo para la práctica:
+
+| Motivo | Detalle |
+| --- | --- |
+| Pesos abiertos | Lo que pruebas en la API lo podrías desplegar tú (vLLM, SGLang, TensorRT-LLM), aunque necesita GPU de centro de datos |
+| MoE con pocos parámetros activos | Rápido para su tamaño: 12B activos de 120B |
+| Pensado para agentes | Entrenado para código, tool calling y flujos multi-paso |
+| Multimodal | Puedes pasarle una captura de un error o un diagrama de arquitectura |
+
+Pasos (detalle completo en [`ejercicios/E6_asistentes.md`](ejercicios/E6_asistentes.md), Parte 0):
+
+```text
+1. Clave      →  build.nvidia.com → "Get API Key" → export NVIDIA_API_KEY=nvapi-...   (nunca al repo)
+2. Smoke test →  script Python con el SDK de OpenAI: ¿responde el modelo? ¿con y sin thinking?
+3. Agente     →  OpenCode (CLI) · Aider (CLI) · Cline (VS Code), configurados con ese endpoint
+4. Contexto   →  AGENTS.md en tu Proyecto III
+5. Prueba     →  prompt "Explicar" del catálogo sobre un módulo real, en una rama
+```
+
+Smoke test (lo que debe funcionar antes de abrir ningún agente):
+
+```python
+# smoke_nemotron.py — sin dependencias salvo `openai`
+import os
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://integrate.api.nvidia.com/v1",
+    api_key=os.environ["NVIDIA_API_KEY"],   # falla en claro si no está definida
+)
+
+resp = client.chat.completions.create(
+    model="nvidia/nemotron-3.5-super-vl-120b-a12b",
+    messages=[{"role": "user", "content": "Escribe una función Python que valide un email. Solo el código."}],
+    temperature=1.0,
+    top_p=0.95,
+    max_tokens=1024,
+    extra_body={"chat_template_kwargs": {"enable_thinking": False}},  # prueba también True
+    timeout=60,
+)
+print(resp.choices[0].message.content)
+print(resp.usage)   # tokens: compara con thinking activado
+```
+
+Configuración de los tres agentes open source (elige uno; el protocolo es el mismo):
+
+**OpenCode** (`opencode.json` en la raíz del proyecto; lee `AGENTS.md`):
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "nvidia": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "NVIDIA build",
+      "options": {
+        "baseURL": "https://integrate.api.nvidia.com/v1",
+        "apiKey": "{env:NVIDIA_API_KEY}"
+      },
+      "models": {
+        "nvidia/nemotron-3.5-super-vl-120b-a12b": { "name": "Nemotron 3.5 Super VL" }
+      }
+    }
+  },
+  "model": "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b",
+  "permission": { "edit": "ask", "bash": "ask" }
+}
+```
+
+> El modelo se referencia como `<proveedor>/<id>`: de ahí el `nvidia/nvidia/...`. `"ask"` obliga a aprobar cada edición y cada comando (B4).
+
+**Aider** (CLI en Python, hace un commit por cambio: ideal para el protocolo de diffs pequeños):
+
+```bash
+export OPENAI_API_BASE=https://integrate.api.nvidia.com/v1
+export OPENAI_API_KEY=$NVIDIA_API_KEY
+aider --model openai/nvidia/nemotron-3.5-super-vl-120b-a12b --read AGENTS.md
+```
+
+**Cline** (extensión de VS Code): *API Provider* → **OpenAI Compatible** · *Base URL* `https://integrate.api.nvidia.com/v1` · *API Key* tu `nvapi-...` · *Model ID* `nvidia/nemotron-3.5-super-vl-120b-a12b`. Deja desactivado el *auto-approve* de comandos y escrituras.
+
+Precauciones específicas de este entorno:
+
+| Riesgo | Medida |
+| --- | --- |
+| La clave `nvapi-...` acaba en el repo | Solo en variable de entorno; `opencode.json` usa `{env:...}`; `git grep nvapi-` antes de cada commit |
+| Código o datos viajan a la nube de NVIDIA | Mismo criterio que con cualquier API en la nube: nada de `.env`, datos personales ni datos de clientes |
+| Límites de la cuenta de prueba | Prompts acotados (A2); evita “lee todo el repo”; si recibes `429`, espera y reduce contexto |
+| Thinking activado = más tokens y más latencia | Úsalo para planificar y revisar; desactívalo para cambios mecánicos |
+| Modelo distinto → resultados distintos | Anota herramienta **y** modelo en `AI_USAGE.md`; no compares diffs entre modelos sin tests |
 
 ---
 
@@ -355,7 +502,7 @@ Salida: solo el diff y una lista de cambios.
 
 ## B4 — Agentes en el repo: control y permisos
 
-Los agentes de terminal (Claude Code, Gemini CLI) y el modo agente de Cursor pueden **leer, editar y ejecutar comandos**. Más potencia = más disciplina.
+Los agentes de terminal (Claude Code, Gemini CLI, Codex CLI, OpenCode, Aider, Goose), las extensiones agénticas (Cline, Roo Code, Continue) y el modo agente de Cursor pueden **leer, editar y ejecutar comandos**. Más potencia = más disciplina.
 
 | Práctica | Motivo |
 | --- | --- |
@@ -375,6 +522,15 @@ git diff --stat                # ¿qué ficheros tocó?
 git diff                       # ¿lo entiendo?
 pytest -q && git commit -am "Refactor: extrae total_importes (paso 1/5)"
 ```
+
+Dónde se controlan los permisos en cada herramienta:
+
+| Herramienta | Control |
+| --- | --- |
+| OpenCode | `"permission": {"edit": "ask", "bash": "ask"}` en `opencode.json` |
+| Aider | Pide confirmación antes de ejecutar comandos; hace un commit por cambio (`git log` / `/undo` para revertir) |
+| Cline / Roo Code | Modo **Plan** antes de **Act**; *auto-approve* desactivado |
+| Claude Code / Gemini CLI / Codex CLI | Modo plan y lista de comandos permitidos en su configuración |
 
 > Si el agente propone instalar algo: para, comprueba que el paquete existe y es el que crees (nombre exacto en PyPI) y añádelo tú a `requirements.txt` con versión acotada.
 
@@ -416,7 +572,7 @@ Un registro útil es **breve, concreto y verificable**. Una entrada por tarea re
 # Uso de IA en el proyecto
 
 ## 2026-11-16 — Refactor de `importes.py`
-- **Herramienta:** Claude Code (o Cursor / Gemini CLI) · modelo si se conoce
+- **Herramienta:** OpenCode (o Aider / Cline / Claude Code…) · **modelo:** `nvidia/nemotron-3.5-super-vl-120b-a12b` (thinking off)
 - **Objetivo:** función de 45 líneas sin tests → función pura testeable
 - **Prompts:** explicar → plan (5 pasos) → paso 1 (catálogo #1, #2)
 - **Aceptado:** extracción de `total_importes`; `is None`; `sum(...)`
@@ -427,7 +583,7 @@ Un registro útil es **breve, concreto y verificable**. Una entrada por tarea re
 
 | Campo | Para qué |
 | --- | --- |
-| Herramienta | Transparencia |
+| Herramienta y modelo | Transparencia y reproducibilidad: el mismo prompt da otro resultado con otro modelo |
 | Objetivo | Qué problema resolvía |
 | Prompts (resumen) | Reproducibilidad del proceso, no el volcado entero |
 | Aceptado / rechazado | Demuestra revisión crítica |
@@ -496,7 +652,9 @@ Para la evaluación (criterio 8 del enunciado): `AI_USAGE.md` con entradas reale
 5. ¿Cómo detectas que un test generado ha alucinado una API?  
 6. ¿Por qué se escribe un test del comportamiento actual **antes** de refactorizar?  
 7. ¿Qué precauciones tomas al dejar que un agente ejecute comandos en tu repo?  
-8. ¿Cómo distingues un hallazgo real de ruido en un review de riesgos asistido?
+8. ¿Cómo distingues un hallazgo real de ruido en un review de riesgos asistido?  
+9. ¿Qué separa al agente del modelo? ¿Qué cambiarías para pasar de Nemotron en la nube a un modelo local?  
+10. ¿Cuándo activarías `enable_thinking` y cuándo no?
 
 ---
 
@@ -510,6 +668,8 @@ Para la evaluación (criterio 8 del enunciado): `AI_USAGE.md` con entradas reale
 
 **Parte B**
 
+- [ ] Entorno open source montado: smoke test de Nemotron OK y agente (OpenCode/Aider/Cline) respondiendo en mi repo  
+- [ ] `AGENTS.md` en el repo y `NVIDIA_API_KEY` fuera de git  
 - [ ] Refactor de un smell real en pasos pequeños, en una rama  
 - [ ] Red de seguridad de tests antes del cambio; `pytest -q` verde después  
 - [ ] Tests generados revisados; los alucinados, borrados y registrados  
@@ -544,7 +704,13 @@ git commit -am "Refactor: <paso 1/5>"  # commit pequeño, mensaje tuyo
 
 | EN / símbolo | Nota |
 | --- | --- |
-| coding assistant | herramienta de IA que sugiere o edita código (Cursor, Claude Code, Gemini CLI) |
+| coding assistant | herramienta de IA que sugiere o edita código (Cursor, Claude Code, Gemini CLI, OpenCode…) |
+| harness | la parte del agente que no es el modelo: herramientas, permisos, contexto, bucle de ejecución |
+| OpenAI-compatible | API con el formato `/v1/chat/completions`; permite enchufar cualquier modelo a cualquier agente |
+| tool calling | capacidad del modelo de pedir que se ejecute una herramienta (leer fichero, lanzar tests) |
+| MoE (Mixture of Experts) | modelo con muchos “expertos” de los que solo se activan unos pocos por token (Nemotron: 12B de 120B) |
+| reasoning / thinking | el modelo razona antes de responder; más calidad en planes, más tokens y latencia |
+| `AGENTS.md` | fichero de contexto en formato abierto que leen muchos agentes |
 | agent | asistente que lee, edita y ejecuta comandos en el repo en varios pasos |
 | prompt | instrucción + contexto que se le da al modelo |
 | context window | cantidad de texto que el modelo puede tener en cuenta a la vez |
@@ -558,7 +724,9 @@ git commit -am "Refactor: <paso 1/5>"  # commit pequeño, mensaje tuyo
 ### FAQ
 
 **¿Puedo usar la IA en el Trabajo Final?** Sí, con el protocolo y registrándolo en `AI_USAGE.md`. Lo que no se acepta es entregar código que no sabes explicar.  
-**¿Qué herramienta uso?** La que prefieras (Cursor, Claude Code, Gemini CLI…). Se evalúa el proceso, no la herramienta.  
+**¿Qué herramienta uso?** La que prefieras (Cursor, Claude Code, Gemini CLI, OpenCode, Aider, Cline…). Se evalúa el proceso, no la herramienta.  
+**¿Necesito pagar una licencia?** No: OpenCode, Aider o Cline + Nemotron en build.nvidia.com (cuenta de prueba) cubren todo el curso.  
+**¿Puedo usar un modelo local?** Sí: cualquier servidor OpenAI-compatible (Ollama, LM Studio, vLLM) se configura igual cambiando `baseURL` y el id del modelo; espera peor tool calling con modelos pequeños.  
 **¿Tengo que citar cada autocompletado?** No: solo aportaciones relevantes (funciones, tests, documentación, decisiones de diseño).  
 **¿Qué hago si la IA insiste en una librería que no conozco?** Comprueba que existe, que está mantenida y que realmente la necesitas; si no, recházala y regístralo.  
 **¿Puedo pegar datos del proyecto en el prompt?** Solo datos de prueba o anonimizados; nunca `.env`, claves ni datos personales.  
