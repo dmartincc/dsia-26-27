@@ -55,19 +55,20 @@ python smoke_nemotron.py                   # script de 01_ia_asistida.md, B1.3
 | Opción | Instalación | Configuración |
 | --- | --- | --- |
 | **A. OpenCode** (recomendada) | `npm i -g opencode-ai` (o `curl -fsSL https://opencode.ai/install \| bash`) | `opencode.json` de B1.3 en la raíz del repo → `opencode` |
-| **B. Aider** | `python -m pip install aider-install && aider-install` | Variables `OPENAI_API_BASE` / `OPENAI_API_KEY` de B1.3 → `aider --model openai/nvidia/nemotron-3.5-super-vl-120b-a12b --read AGENTS.md` |
-| **C. Cline** (VS Code) | Extensión “Cline” del marketplace | Provider **OpenAI Compatible**, base URL, clave e id del modelo de B1.3 |
+| **B. Qwen Code** | `npm i -g @qwen-code/qwen-code@latest` (Node 22+) o `brew install qwen-code` | `.qwen/settings.json` de B1.3 en la raíz del repo → `qwen` → comprueba con `/model` que está seleccionado Nemotron y con `/approval-mode` que estás en *default* (pide permiso), no en *Auto* |
+| **C. Aider** | `python -m pip install aider-install && aider-install` | Variables `OPENAI_API_BASE` / `OPENAI_API_KEY` de B1.3 → `aider --model openai/nvidia/nemotron-3.5-super-vl-120b-a12b --read AGENTS.md` |
+| **D. Cline** (VS Code) | Extensión “Cline” del marketplace | Provider **OpenAI Compatible**, base URL, clave e id del modelo de B1.3 |
 
 Comprobaciones:
 
 ```bash
 git grep -n "nvapi-" || echo "OK: ninguna clave en el repo"
-git status                                 # opencode.json sí se puede versionar (usa {env:...}); la clave no
+git status                                 # opencode.json y .qwen/settings.json sí se versionan (leen la clave del entorno); la clave no
 ```
 
 ### 0.4 — Contexto del proyecto (3 min)
 
-Crea `AGENTS.md` en la raíz de tu Proyecto III con la plantilla mínima de B1.2 (stack, cómo se ejecutan los tests, capas, qué no tocar, “nunca leer `.env`”). Si usas Aider, pásalo con `--read AGENTS.md`.
+Crea `AGENTS.md` en la raíz de tu Proyecto III con la plantilla mínima de B1.2 (stack, cómo se ejecutan los tests, capas, qué no tocar, “nunca leer `.env`”). Si usas Aider, pásalo con `--read AGENTS.md`. Qwen Code lo carga solo (también leería `QWEN.md`: no dupliques, usa uno).
 
 ### 0.5 — Primera prueba (2 min)
 
@@ -83,7 +84,7 @@ Si responde citando ficheros reales de tu repo, el agente lee el proyecto y llam
 ### Hecho cuando (Parte 0)
 
 - [ ] El smoke test responde con y sin thinking
-- [ ] Un agente (OpenCode, Aider o Cline) responde sobre tu repo con Nemotron
+- [ ] Un agente (OpenCode, Qwen Code, Aider o Cline) responde sobre tu repo con Nemotron
 - [ ] `AGENTS.md` versionado; `git grep nvapi-` vacío
 - [ ] Entrada en `AI_USAGE.md`: herramienta, modelo, tokens con y sin thinking, incidencias de instalación
 
